@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nombre de Commits par Minute</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+    <div id="chart_div"></div>
+    <script>
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(drawBackgroundColor);
+
+      function drawBackgroundColor() {
+        function drawChart(data) {
+          var dataTable = new google.visualization.DataTable();
+          // Col 1 : Chaîne de caractère pour la minute (ex: "2024-03-10 14:35")
+          dataTable.addColumn('string', 'Minute');
+          // Col 2 : Nombre de commits (nombre entier)
+          dataTable.addColumn('number', 'Nombre de Commits'); 
+
+          data.results.forEach(entry => {
+            // Pas de conversion de date en JS, on utilise la chaîne formatée de l'API Python
+            dataTable.addRow([entry.Minute, entry.Count]);
+          });
+
+          var options = {
+            title: 'Fréquence des Commits (Minute par Minute)',
+            legend: { position: 'none' },
+            vAxis: { title: 'Nombre de Commits' },
+            hAxis: { 
+                title: 'Minute', 
+                // Pour éviter d'afficher toutes les minutes si elles sont trop nombreuses
+                showTextEvery: 5 
+            } 
+          };
+
+          // Un graphique à colonnes (histogramme) est approprié pour la fréquence
+          var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+          chart.draw(dataTable, options);
+        }
+
+        // Appel de la nouvelle API interne
+        fetch('/commits-api/')
+          .then(response => response.json())
+          .then(data => {
+            drawChart(data);
+          })
+      }
+    </script>
+  </body>
+</html>
